@@ -136,13 +136,13 @@
                 // Objeto para armazenar funções relacionadas à PokeAPI
                 const pokeApi = {}
 
-                // Converte os detalhes de um Pokémon da API para uma instância da classe Pokemon
+                // Converte os detalhes de um Pokémon da API para uma objeto da classe Pokemon
                 function convertPokeApiDetailToPokemon(pokeDetail) {
                     const pokemon = new Pokemon();
                     pokemon.name = pokeDetail.name; // Define o nome do Pokémon
                     pokemon.number = pokeDetail.id; // Define o número do Pokémon
 
-                    // Obtém os tipos do Pokémon
+                    // Obtém os tipos do Pokémon//map coverte array e outros tipos de array
                     const types = pokeDetail.types.map((typeSlot) => typeSlot.type.name);
                     const [type] = types;
 
@@ -165,14 +165,14 @@
                     const url = `https://pokeapi.co/api/v2/pokemon?offset=${offset}&limit=${limit}`; // Define a URL com offset e limit
                     return $.get(url).then((response) => {
                         // Mapeia os resultados para buscar os detalhes de cada Pokémon
-                        const detailRequests = response.results.map((pokemon) => pokeApi.getPokemonDetail(pokemon.url));
+                        const detailRequests = response.results.map((pokemon) => pokeApi.getPokemonDetail(pokemon.url));//ta convertendo pra um objeto pokemon
                         // Aguarda todas as requisições de detalhes serem concluídas
-                        return Promise.all(detailRequests);
+                        return Promise.all(detailRequests);//informção pra java//aguardar para responder 
                     });
                 }
-
+                  //aqui começa a acionar o site
                 let offset = 0; // Offset inicial
-                const limit = 10; // Número de Pokémon a buscar por vez
+                const limit = 11; // Número de Pokémon a buscar por vez
 
                 // Função para carregar Pokémon e adicionar à lista
                 function loadPokemons(offset, limit) {
@@ -180,7 +180,7 @@
                         const $pokemonList = $('#pokemonList'); // Seleciona a lista de Pokémon
                         pokemons.forEach((pokemon) => {
                             // Cria o card do Bootstrap para cada Pokémon
-                            const card = $('<div>').addClass('col-md-4 mb-3').append(
+                              const card = $('<div>').addClass('col-md-4 mb-3').append(
                                 $('<div>').addClass('card').append(
 
                                     $('<img>').addClass('card-img-top').attr('src', pokemon.photo).attr('alt', pokemon.name), // Imagem do Pokémon
