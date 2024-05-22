@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pokedex</title>
+    <!-- Inclui o CSS de normalização para consistência entre navegadores -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css"
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <!-- Pré-conexão para melhorar o desempenho ao carregar fontes do Google -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <!-- Inclui a fonte Roboto do Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@100;300;500;700&display=swap" rel="stylesheet">
+    <!-- Inclui a biblioteca do Bootstrap -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet"
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+        
+    <style>
+        /* Estilo para o container da seção de conteúdo */
+        .content {
+            padding: 20px;
+        }
+
+        /* Estilo para o título da Pokedex */
+        .content h1 {
+            margin-bottom: 20px;
+        }
+
+        /* Estilo para os cards de Pokémon */
+        .card {
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            height: 400px;
+            /* Defina a altura desejada para os cards */
+        }
+
+        .card-title {
+            background-color: #ffc107;
+            /* Cor de fundo para os nomes */
+            padding: 5px 10px;
+            border-radius: 5px;
+        }
+
+        .card-id {
+            background-color: #17a2b8;
+            /* Cor de fundo para os IDs */
+            padding: 5px 10px;
+            border-radius: 5px;
+        }
+
+        .card-type {
+            background-color: #28a745;
+            /* Cor de fundo para os tipos */
+            padding: 5px 10px;
+            border-radius: 5px;
+        }
+
+        /* Estilo para a imagem do Pokémon */
+        .card-img-top {
+            border-top-left-radius: 8px;
+            border-top-right-radius: 8px;
+            width: 100%;
+            /* Isso garante que a imagem ocupe toda a largura do card */
+            height: auto;
+            /* A altura será ajustada automaticamente para manter a proporção original */
+            max-width: 100%;
+            /* Define a largura máxima para evitar que as imagens fiquem maiores do que a largura do card */
+            max-height: 200px;
+            /* Define a altura máxima para evitar que as imagens fiquem muito grandes */
+        }
+
+        /* Estilo para o nome do Pokémon */
+        .card-title {
+            font-size: 1.5rem;
+            /* Aumenta o tamanho do nome */
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+            text-transform: capitalize;
+            /* Transforma o texto em capitalizado */
+        }
+
+        /* Estilo para o número do Pokémon */
+        .card-id {
+            font-size: 1rem;
+            /* Tamanho do número */
+            font-weight: bold;
+            margin-bottom: 0.25rem;
+        }
+
+        /* Estilo para os tipos do Pokémon */
+        .card-type {
+            font-size: 1rem;
+            /* Tamanho dos tipos */
+            margin-bottom: 0.5rem;
+        }
+    </style>
+
+</head>
+
+<body>
+    <section class="content">
+        <h1 class="text-center">Pokedex</h1>
+        <!-- Lista de Pokémon, onde os itens serão adicionados dinamicamente -->
+        <div id="pokemonList" class="row"></div>
+        <!-- Botão para carregar mais Pokémon -->
+        <div class="pagination text-center">
+            <button id="loadMoreButton" type="button" class="btn btn-primary">Load More</button>
+        </div>
+    </section>
+
+    <!-- Inclui a biblioteca jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Inclui a biblioteca do Bootstrap -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.0/js/bootstrap.bundle.min.js"
+        crossorigin="anonymous"></script>
+    <script>
+        // Verifica se o jQuery está disponível
+        if (typeof jQuery !== 'undefined') {
+            // Aguarda o carregamento completo da página
+            $(document).ready(function () {
+                // Define a classe Pokemon com suas propriedades
+                class Pokemon {
+                    constructor() {
+                        this.name = ''; // Nome do Pokémon
+                        this.number = 0; // Número do Pokémon na Pokédex
+                        this.types = []; // Tipos do Pokémon
+                        this.type = ''; // Primeiro tipo do Pokémon
+                        this.photo = ''; // URL da foto do Pokémon
+                    }
+                }
+
+                // Objeto para armazenar funções relacionadas à PokeAPI
+                const pokeApi = {}
+
+                // Converte os detalhes de um Pokémon da API para uma instância da classe Pokemon
+                function convertPokeApiDetailToPokemon(pokeDetail) {
+                    const pokemon = new Pokemon();
+                    pokemon.name = pokeDetail.name; // Define o nome do Pokémon
+                    pokemon.number = pokeDetail.id; // Define o número do Pokémon
+
+                    // Obtém os tipos do Pokémon
+                    const types = pokeDetail.types.map((typeSlot) => typeSlot.type.name);
+                    const [type] = types;
+
+                    pokemon.types = types; // Define todos os tipos do Pokémon
+                    pokemon.type = type; // Define o primeiro tipo do Pokémon
+
+                    // Obtém a URL da imagem do Pokémon
+                    pokemon.photo = pokeDetail.sprites.other.dream_world.front_default;
+
+                    return pokemon; // Retorna a instância de Pokemon
+                }
+
+                // Busca os detalhes de um Pokémon dado seu URL
+                pokeApi.getPokemonDetail = (url) => {
+                    return $.get(url).then(convertPokeApiDetailToPokemon); // Realiza a requisição e converte os detalhes
+                }
+
+                // Busca uma lista de Pokémon com base em um offset e limit
+                pokeApi.getPokemons = (offset = 0, limit = 10) => {
+                    const url = `https://pokeapi.co/api/v2/pokemon?offset=${offset}&limit=${limit}`; // Define a URL com offset e limit
+                    return $.get(url).then((response) => {
+                        // Mapeia os resultados para buscar os detalhes de cada Pokémon
+                        const detailRequests = response.results.map((pokemon) => pokeApi.getPokemonDetail(pokemon.url));
+                        // Aguarda todas as requisições de detalhes serem concluídas
+                        return Promise.all(detailRequests);
+                    });
+                }
+
+                let offset = 0; // Offset inicial
+                const limit = 10; // Número de Pokémon a buscar por vez
+
+                // Função para carregar Pokémon e adicionar à lista
+                function loadPokemons(offset, limit) {
+                    pokeApi.getPokemons(offset, limit).then((pokemons) => {
+                        const $pokemonList = $('#pokemonList'); // Seleciona a lista de Pokémon
+                        pokemons.forEach((pokemon) => {
+                            // Cria o card do Bootstrap para cada Pokémon
+                            const card = $('<div>').addClass('col-md-4 mb-3').append(
+                                $('<div>').addClass('card').append(
+
+                                    $('<img>').addClass('card-img-top').attr('src', pokemon.photo).attr('alt', pokemon.name), // Imagem do Pokémon
+                                    $('<div>').addClass('card-body').append(
+                                        $('<h5>').addClass('card-title').text(pokemon.name), // Nome do Pokémon
+                                        $('<p>').addClass('card-id').text(`#${pokemon.number.toString().padStart(3, '0')}`), // Número do Pokémon
+                                        $('<p>').addClass('card-type').text(`Type: ${pokemon.types.join(', ')}`) // Tipos do Pokémon
+                                    )
+                                )
+                            );
+                            $pokemonList.append(card); // Adiciona o card à lista de Pokémon
+                        });
+                    });
+                }
+
+                // Carrega mais Pokémon ao clicar no botão "Load More"
+                $('#loadMoreButton').click(function () {
+                    offset += limit; // Incrementa o offset
+                    loadPokemons(offset, limit); // Carrega mais Pokémon
+                });
+
+                // Carrega os primeiros Pokémon ao carregar a página
+                loadPokemons(offset, limit);
+            });
+        } else {
+            // Se o jQuery não estiver disponível, exibe uma mensagem de erro no console
+            console.error("jQuery não está disponível. Certifique-se de incluir jQuery no seu projeto.");
+        }
+    </script>
+</body>
+
+</html>
